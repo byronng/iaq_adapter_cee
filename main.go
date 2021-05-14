@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byronng/iaq_adapter_gsd/handlers"
+	"github.com/byronng/iaq_adapter_cee/handlers"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 

@@ -1,4 +1,4 @@
-module github.com/byronng/iaq_adapter_gsd
+module github.com/byronng/iaq_adapter_cee
 
 go 1.16
 
