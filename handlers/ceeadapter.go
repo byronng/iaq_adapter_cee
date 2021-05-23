@@ -327,7 +327,7 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 
 func (a Adapter) SendTestingData(uri *url.URL) {
 	client := connect("pub", uri)
-	timer := time.NewTicker(10 * time.Second)
+	timer := time.NewTicker(60 * time.Second)
 	topic := "GASDATATEST/8caab58daaa1"
 	for range timer.C {
 		payload := `{"mac": "8caab58daaa1", "co": 10.0, "co2": 11, "o3": 4, "so2": 25.98, "no2": 51.07, "hcho": 1.07}`
