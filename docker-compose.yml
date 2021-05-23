@@ -1,11 +1,10 @@
-version: '3.8'
+version: "3.8"
 
 # Services
 services:
-
   # CEE Device Connector
   iaq_adapter_cee:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
       args:
@@ -14,25 +13,8 @@ services:
         - mqtt_topics=GASDATA
         - rest_uri=http://172.17.0.1/api
         #- cloud_uri=https://demo.woofaa.com/api
-    container_name: iaq_adpter_cee 
+    container_name: iaq_adpter_cee
     working_dir: /app
-    depends_on:
-      - mqtt
-    restart: unless-stopped
-
-  # MQTT service
-  mqtt:
-    image: eclipse-mosquitto:2
-    hostname: mosquitto
-    container_name: mosquitto
-    working_dir: /mosquitto
-    expose:
-      - "1883"
-    ports:
-      - 1883:1883
-    volumes:
-      - ./.docker/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./.docker/mqtt/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
-      - ./.docker/mqtt/log:/mosquitto/log
-      - ./.docker/mqtt/data:/mosquitto/data
+    #    depends_on:
+    #      - mqtt
     restart: unless-stopped

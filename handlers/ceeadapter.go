@@ -38,6 +38,14 @@ type IAQDevice struct {
 	//Name        string `json:"device_name"`
 	//ImageFile   string `json:"device_imagefile"`
 
+	H2SAdjust string `json:"h2s_adjust"`
+	AQIAdjust string `json:"aqi_adjust"`
+
+	SO2Adjust  string `json:"so2_adjust"`
+	NO2Adjust  string `json:"no2_adjust"`
+	O3Adjust   string `json:"o3_adjust"`
+	HCHOAdjust string `json:"hcho_adjust"`
+
 	PM2p5Adjust string `json:"pm2p5_adjust"`
 	COAdjust    string `json:"co_adjust"`
 	CO2Adjust   string `json:"co2_adjust"`
@@ -55,16 +63,19 @@ type IAQDevice struct {
 type CEEPayLoad struct {
 	MAC string `json:"mac"`
 
-	H2S json.Number `json:"h2s"`
-	SO2 json.Number `json:"so2"`
-	NO2 json.Number `json:"no2"`
-	O3  json.Number `json:"o3"`
+	//H2S json.Number `json:"h2s"`
+	//AQI json.Number `json:"aqi"`
 
-	CO    json.Number `json:"25"`
+	SO2  json.Number `json:"so2"`
+	NO2  json.Number `json:"no2"`
+	O3   json.Number `json:"o3"`
+	HCHO json.Number `json:"hcho"`
+
+	CO    json.Number `json:"co"`
 	TEMP  json.Number `json:"temp"`
 	HUM   json.Number `json:"hum"`
-	PM2P5 json.Number `json:"3232255025"`
-	PM10  json.Number `json:"32322550100"`
+	PM2P5 json.Number `json:"pm2p5"`
+	PM10  json.Number `json:"pm10"`
 	TVOC  json.Number `json:"tvoc"`
 	CO2   json.Number `json:"co2"`
 	PM100 json.Number `json:"pm100"`
@@ -208,6 +219,11 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 				"c2h2": "%s",
 				"pm10": "%s",
 				"pm100": "%s",
+
+				"o3": "%s",
+				"so2": "%s",
+				"no2": "%s",
+				"hcho": "%s",
 				"date_created": "%s"
 			}`, payload.MAC,
 			a.ValueNumberAdjustment(payload.HUM, a.adj[macAddress].HumAdjust, false),
@@ -219,6 +235,13 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 			a.ValueNumberAdjustment(payload.C2H2, a.adj[macAddress].C2H2Adjust, false),
 			a.ValueNumberAdjustment(payload.PM10, a.adj[macAddress].PM10Adjust, false),
 			a.ValueNumberAdjustment(payload.PM100, a.adj[macAddress].PM100Adjust, false),
+
+			a.ValueNumberAdjustment(payload.O3, a.adj[macAddress].O3Adjust, false),
+			a.ValueNumberAdjustment(payload.SO2, a.adj[macAddress].SO2Adjust, false),
+			a.ValueNumberAdjustment(payload.NO2, a.adj[macAddress].NO2Adjust, false),
+			a.ValueNumberAdjustment(payload.HCHO, a.adj[macAddress].HCHOAdjust, false),
+			//a.ValueNumberAdjustment(payload.PM10, a.adj[macAddress].PM10Adjust, false),
+			//a.ValueNumberAdjustment(payload.PM100, a.adj[macAddress].PM100Adjust, false),
 			/*
 				func(f sql.NullFloat64) string {
 					if f.Valid {
@@ -304,10 +327,11 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 
 func (a Adapter) SendTestingData(uri *url.URL) {
 	client := connect("pub", uri)
-	timer := time.NewTicker(60 * time.Second)
+	timer := time.NewTicker(10 * time.Second)
 	topic := "GASDATATEST/8caab58daaa1"
 	for range timer.C {
-		client.Publish(topic, 0, false, `{"mac": "8caab58daaa1", "3232255025": 10.0, "32322550100": 11, "25": 4, "temp": 25.98, "hum": 51.07}`)
+		payload := `{"mac": "8caab58daaa1", "co": 10.0, "co2": 11, "o3": 4, "so2": 25.98, "no2": 51.07, "hcho": 1.07}`
+		client.Publish(topic, 0, false, payload)
 	}
 }
 
