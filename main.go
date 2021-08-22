@@ -87,18 +87,31 @@ func getDeviceAdjust(restServer string, devAdj map[string]handlers.IAQDevice, l 
 func main() {
 	if len(os.Getenv("REST_URI")) > 0 {
 		handlers.RESTURI = os.Getenv("REST_URI")
+	} else {
+		// for debug
+		//handlers.RESTURI = `https://iaq.creaxtive.com/api`
+		handlers.RESTURI = `http://localhost:4000`
 	}
 
 	if len(os.Getenv("CLOUD_URI")) > 0 {
 		handlers.CLOUDURI = os.Getenv("CLOUD_URI")
+	} else {
+		// for debug
+		handlers.CLOUDURI = ""
 	}
 
 	if len(os.Getenv("MQTT_URI")) > 0 {
 		handlers.MQTTURI = os.Getenv("MQTT_URI")
+	} else {
+		// for debug
+		handlers.MQTTURI = `mqtt://pi:woofaa@localhost:1883`
 	}
 
 	if len(os.Getenv("MQTT_TOPICS")) > 0 {
 		handlers.TOPICS = os.Getenv("MQTT_TOPICS")
+	} else {
+		// for debug
+		handlers.TOPICS = `GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE`
 	}
 
 	l := log.New(os.Stdout, "cee_adapter", log.LstdFlags)

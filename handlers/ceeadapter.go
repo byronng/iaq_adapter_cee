@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -187,27 +188,37 @@ func (a Adapter) ListenMultiple(uri *url.URL, topics map[string]byte) {
 	//client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 	client.SubscribeMultiple(topics, func(client mqtt.Client, msg mqtt.Message) {
 
-		var payload CEEPayLoad
-
-		//err := json.Unmarshal([]byte(jsonString), &payload)
-		err := json.Unmarshal(msg.Payload(), &payload)
-		if err != nil {
-			a.l.Println("json.Unmarshal error, ", err)
-			a.l.Println("Payload data: " + string(msg.Payload()))
-		}
-
-		if len(payload.MAC) > 0 {
-			a.StoreData(payload)
+		if strings.Contains(msg.Topic(), "GASDATA") {
+			a.StoreValue(msg.Payload())
+		} else if strings.Contains(msg.Topic(), "UVSTATUS/CURRENTLIFETIME") {
+			fmt.Println("UVSTATUS/CURRENTLIFETIME")
+			a.StoreUVUpdate(msg.Topic()[len("UVSTATUS/CURRENTLIFETIME")+1:], "currentlifetime", msg.Payload())
+		} else if strings.Contains(msg.Topic(), "UVSTATUS/SENDVALUE") {
+			fmt.Println("UVSTATUS/SENDVALUE")
+			a.StoreUVUpdate(msg.Topic()[len("UVSTATUS/SENDVALUE")+1:], "uvstatus", msg.Payload())
 		}
 
 	})
 }
 
-func (a Adapter) StoreData(payload CEEPayLoad) {
-	macAddress := payload.MAC
+func (a Adapter) StoreValue(pload []byte) {
+	var payload CEEPayLoad
+
+	//err := json.Unmarshal([]byte(jsonString), &payload)
+	err := json.Unmarshal(pload, &payload)
+	if err != nil {
+		a.l.Println("json.Unmarshal error, ", err)
+		a.l.Println("Payload data: " + string(pload))
+	}
+
+	if len(payload.MAC) == 0 {
+		return
+	}
+
+	macAddress := strings.ToLower(payload.MAC)
 	if len(macAddress) >= 12 {
 		timeNow := time.Now().UTC().Format("2006-01-02 15:04:05")
-		json := fmt.Sprintf(`
+		bodyStr := fmt.Sprintf(`
 			{
 				"device": "%s",
 				"humidity": "%s",
@@ -240,46 +251,17 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 			a.ValueNumberAdjustment(payload.SO2, a.adj[macAddress].SO2Adjust, false),
 			a.ValueNumberAdjustment(payload.NO2, a.adj[macAddress].NO2Adjust, false),
 			a.ValueNumberAdjustment(payload.HCHO, a.adj[macAddress].HCHOAdjust, false),
-			//a.ValueNumberAdjustment(payload.PM10, a.adj[macAddress].PM10Adjust, false),
-			//a.ValueNumberAdjustment(payload.PM100, a.adj[macAddress].PM100Adjust, false),
-			/*
-				func(f sql.NullFloat64) string {
-					if f.Valid {
-						return fmt.Sprintf("%.2f", f.Float64)
-					} else {
-						return ""
-					}
-				}(payload.O3),
-				func(f sql.NullFloat64) string {
-					if f.Valid {
-						return fmt.Sprintf("%.2f", f.Float64)
-					} else {
-						return ""
-					}
-				}(payload.H2S),
-				func(f sql.NullFloat64) string {
-					if f.Valid {
-						return fmt.Sprintf("%.2f", f.Float64)
-					} else {
-						return ""
-					}
-				}(payload.SO2),
-				func(f sql.NullFloat64) string {
-					if f.Valid {
-						return fmt.Sprintf("%.2f", f.Float64)
-					} else {
-						return ""
-					}
-				}(payload.NO2),
-			*/
+
 			timeNow)
 		//fmt.Println(json)
-		var jsonStr = []byte(json)
+		reqBody := []byte(bodyStr)
 
-		req, err := http.NewRequest("POST", RESTURI+"/iaq/createrecord", bytes.NewBuffer(jsonStr))
+		req, err := http.NewRequest("POST", RESTURI+"/iaq/createrecord", bytes.NewBuffer(reqBody))
 		if err != nil {
 			a.l.Println("Unable to create record: " + string(err.Error()))
 		}
+		//req.Close = true
+
 		req.Header.Set("X-Custom-Header", "creaXtive")
 		req.Header.Set("Content-Type", "application/json")
 
@@ -299,7 +281,7 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 		a.l.Println("response Body:", string(body))
 
 		if len(CLOUDURI) > len("localhost") {
-			req, err = http.NewRequest("POST", CLOUDURI+"/iaq/createrecord", bytes.NewBuffer(jsonStr))
+			req, err = http.NewRequest("POST", CLOUDURI+"/iaq/createrecord", bytes.NewBuffer(reqBody))
 			if err != nil {
 				a.l.Println("Unable to create record: " + string(err.Error()))
 			}
@@ -320,6 +302,60 @@ func (a Adapter) StoreData(payload CEEPayLoad) {
 			*/
 			body, _ = ioutil.ReadAll(resp.Body)
 			a.l.Println("Cloud response Body:", string(body))
+		}
+
+	}
+}
+
+func (a Adapter) StoreUVUpdate(macAddress string, attribute string, pload []byte) {
+	//var payload CEEPayLoad
+	var payload struct {
+		UVStatus        int `json:"uvstatus"`
+		CurrentLifetime int `json:"currentlifetime"`
+	}
+
+	//err := json.Unmarshal([]byte(jsonString), &payload)
+	err := json.Unmarshal(pload, &payload)
+	if err != nil {
+		a.l.Println("json.Unmarshal error, ", err)
+		a.l.Println("Payload data: " + string(pload))
+	}
+
+	if len(macAddress) >= 12 {
+		var url string
+		if attribute == "uvstatus" {
+			url = fmt.Sprintf("%v/cee/%v/%v/%v", RESTURI, attribute, strings.ToLower(macAddress), payload.UVStatus)
+		} else if attribute == "currentlifetime" {
+			url = fmt.Sprintf("%v/cee/%v/%v/%v", RESTURI, attribute, strings.ToLower(macAddress), payload.CurrentLifetime)
+		}
+
+		req, err := http.NewRequest(http.MethodPut, url, nil)
+		if err != nil {
+			a.l.Println(err)
+			return
+		}
+
+		req.Header.Set("User-Agent", "creaxtive")
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		a.l.Println("response Body:", string(body))
+
+		if len(CLOUDURI) > len("localhost") {
+			if attribute == "uvstatus" {
+				url = fmt.Sprintf("%v/cee/%v/%v/%v", CLOUDURI, attribute, strings.ToLower(macAddress), payload.UVStatus)
+			} else if attribute == "currentlifetime" {
+				url = fmt.Sprintf("%v/cee/%v/%v/%v", CLOUDURI, attribute, strings.ToLower(macAddress), payload.CurrentLifetime)
+			}
+			_, err = http.NewRequest(http.MethodPut, url, nil)
+			if err != nil {
+				a.l.Println("Unable to update cloud: " + string(err.Error()))
+			}
 		}
 
 	}

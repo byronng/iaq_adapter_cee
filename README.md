@@ -25,3 +25,12 @@ docker-compose down -v
 ## Logging
 e.g. docker-compose logs -f > dockerlog.txt
 
+
+## MQTT
+Publish:
+mosquitto_pub -d -h iaq.creaxtive.com -p 1883 -u pi -P woofaa -t 'GASDATA/8caab58daa99' -m '{\"mac\":\"8caab58daa99\", \"CO2\":678, \"temp\":28.5, \"hum\":65.3}'
+mosquitto_pub -d -h localhost -p 1883 -u pi -P woofaa -t 'UVSTATUS/CURRENTLIFETIME/8caab58daa99' -m '{\"currentlifetime\":165}'
+mosquitto_pub -d -h localhost -p 1883 -u pi -P woofaa -t 'UVSTATUS/SENDVALUE/8caab58daa99' -m '{\"uvstatus\":165}'
+
+Subscrib:
+mosquitto_sub -d -h iaq.creaxtive.com -p 1883  -u pi -P woofaa -t "#"
