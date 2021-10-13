@@ -186,8 +186,10 @@ func (a Adapter) ValueNumberAdjustment(f json.Number, adjust string, sign bool) 
 func (a Adapter) ListenMultiple(uri *url.URL, topics map[string]byte) {
 	client := connect("sub", uri)
 	//client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-	client.SubscribeMultiple(topics, func(client mqtt.Client, msg mqtt.Message) {
+	fmt.Println(uri)
 
+	client.SubscribeMultiple(topics, func(client mqtt.Client, msg mqtt.Message) {
+		fmt.Println(msg.Topic())
 		if strings.Contains(msg.Topic(), "GASDATA") {
 			a.StoreValue(msg.Payload())
 		} else if strings.Contains(msg.Topic(), "UVSTATUS/CURRENTLIFETIME") {

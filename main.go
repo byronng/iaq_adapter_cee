@@ -85,6 +85,8 @@ func getDeviceAdjust(restServer string, devAdj map[string]handlers.IAQDevice, l 
 }
 
 func main() {
+	l := log.New(os.Stdout, "cee_adapter", log.LstdFlags)
+
 	if len(os.Getenv("REST_URI")) > 0 {
 		handlers.RESTURI = os.Getenv("REST_URI")
 	} else {
@@ -102,6 +104,7 @@ func main() {
 
 	if len(os.Getenv("MQTT_URI")) > 0 {
 		handlers.MQTTURI = os.Getenv("MQTT_URI")
+		l.Println("MQTT: " + handlers.MQTTURI)
 	} else {
 		// for debug
 		handlers.MQTTURI = `mqtt://pi:woofaa@localhost:1883`
@@ -114,7 +117,6 @@ func main() {
 		handlers.TOPICS = `GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE`
 	}
 
-	l := log.New(os.Stdout, "cee_adapter", log.LstdFlags)
 	uri, err := url.Parse(handlers.MQTTURI)
 	if err != nil {
 		l.Printf("%+v\n", err)
