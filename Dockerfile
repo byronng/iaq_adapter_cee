@@ -7,6 +7,8 @@ ARG mqtt_uri
 ENV MQTT_URI $mqtt_uri
 ARG rest_uri
 ENV REST_URI $rest_uri
+ARG cloud_uri
+ENV CLOUD_URI $cloud_uri
 ARG mqtt_topics
 ENV MQTT_TOPICS $mqtt_topics
 # We create an /app directory within our
