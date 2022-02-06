@@ -26,6 +26,18 @@ docker-compose down -v
 e.g. docker-compose logs -f > dockerlog.txt
 
 
+#### Local and Cloud Example:
+docker build --build-arg rest_uri=https://demo.woofaa.com/api --build-arg mqtt_uri=mqtt://pi:woofaa@demo.woofaa.com:1883 --bld-arg mqtt_topics="GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE" --build-arg gin_mode=release -t iaq_adapter_cee .
+
+
+## Debug Run
+docker run -it iaq_adapter_cee
+
+## Run
+docker run -d --restart unless-stopped iaq_adapter_cee
+
+
+
 ## MQTT
 Publish:
 mosquitto_pub -d -h iaq.creaxtive.com -p 1883 -u pi -P woofaa -t 'GASDATA/8caab58daa99' -m '{\"mac\":\"8caab58daa99\", \"CO2\":678, \"temp\":28.5, \"hum\":65.3}'
