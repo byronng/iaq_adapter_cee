@@ -5,19 +5,31 @@ services:
   # CEE Device Connector
   iaq_adapter_cee:
     network_mode: host
+
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - gin_mode=release
+      #args:
+        #- gin_mode=release
         #- mqtt_uri=mqtt://pi:woofaa@172.17.0.1:1883
-        - mqtt_uri=mqtt://pi:woofaa@127.0.0.1:1883
-        - mqtt_topics=GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE
+        #- mqtt_uri=mqtt://pi:woofaa@127.0.0.1:1883
+        #- mqtt_topics=GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE
         #- rest_uri=http://172.17.0.1/api
-        - rest_uri=http://127.0.0.1:4000
+        #- rest_uri=http://127.0.0.1:4000
         #- cloud_uri=https://demo.woofaa.com/api
     container_name: iaq_adpter_cee
     working_dir: /app
     #    depends_on:
     #      - mqtt
+
+
+    environment:
+      GIN_MODE: release
+      MQTT_URI: mqtt://pi:woofaa@127.0.0.1:1883
+      REST_URI: http://127.0.0.1:4000
+      #REST_URI: http://demo.woofaa.com/api
+      CLOUD_URI:
+      MQTT_TOPICS: GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE
+
     restart: unless-stopped
+

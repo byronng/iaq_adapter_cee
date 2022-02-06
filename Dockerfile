@@ -1,16 +1,16 @@
 # We specify the base image we need for our
 # go application
 FROM golang:1.16
-ARG gin_mode  
-ENV GIN_MODE $gin_mode
-ARG mqtt_uri
-ENV MQTT_URI $mqtt_uri
-ARG rest_uri
-ENV REST_URI $rest_uri
-ARG cloud_uri
-ENV CLOUD_URI $cloud_uri
-ARG mqtt_topics
-ENV MQTT_TOPICS $mqtt_topics
+#ARG gin_mode  
+#ENV GIN_MODE $gin_mode
+#ARG mqtt_uri
+#ENV MQTT_URI $mqtt_uri
+#ARG rest_uri
+#ENV REST_URI $rest_uri
+#ARG cloud_uri
+#ENV CLOUD_URI $cloud_uri
+#ARG mqtt_topics
+#ENV MQTT_TOPICS $mqtt_topics
 # We create an /app directory within our
 # image that will hold our application source
 # files
