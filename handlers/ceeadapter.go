@@ -184,7 +184,8 @@ func (a Adapter) ValueNumberAdjustment(f json.Number, adjust string, sign bool) 
 }
 
 func (a Adapter) ListenMultiple(uri *url.URL, topics map[string]byte) {
-	client := connect("sub", uri)
+
+	client := connect("CEESUB_"+strconv.FormatInt(time.Now().Unix(), 10), uri)
 	//client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Println(uri)
 
@@ -364,7 +365,7 @@ func (a Adapter) StoreUVUpdate(macAddress string, attribute string, pload []byte
 }
 
 func (a Adapter) SendTestingData(uri *url.URL) {
-	client := connect("pub", uri)
+	client := connect("CEEPUB_"+strconv.FormatInt(time.Now().Unix(), 10), uri)
 	timer := time.NewTicker(60 * time.Second)
 	topic := "GASDATATEST/8caab58daaa1"
 	for range timer.C {
