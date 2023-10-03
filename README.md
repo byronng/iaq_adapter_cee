@@ -27,15 +27,16 @@ e.g. docker-compose logs -f > dockerlog.txt
 
 
 #### Local and Cloud Example:
-docker build --build-arg rest_uri=https://demo.woofaa.com/api --build-arg mqtt_uri=mqtt://pi:woofaa@demo.woofaa.com:1883 --bld-arg mqtt_topics="GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE" --build-arg gin_mode=release -t iaq_adapter_cee .
+docker build -t iaq_adapter_cee .
 
 
 ## Debug Run
 docker run -it iaq_adapter_cee
+docker run -e REST_URI=https://demo.woofaa.com/api -e MQTT_URI=mqtt://pi:woofaa@demo.woofaa.com:1883 -e MQTT_TOPICS="GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE" -e GIN_MODE=release -it iaq_adapter_cee
 
 ## Run
 docker run -d --restart unless-stopped iaq_adapter_cee
-
+docker run -e REST_URI=https://demo.woofaa.com/api -e MQTT_URI=mqtt://pi:woofaa@demo.woofaa.com:1883 -e MQTT_TOPICS="GASDATA;UVSTATUS/CURRENTLIFETIME;UVSTATUS/SENDVALUE" -e GIN_MODE=release -d --restart unless-stopped iaq_adapter_cee
 
 
 ## MQTT
